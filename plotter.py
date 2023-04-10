@@ -13,7 +13,7 @@ class Plotter:
             y.append(np.log10(abs(i - self._function_value_at_minimum_point)))
         return y
 
-    def plot(self, base_method_values, first_modification_values, second_modification_values):
+    def plot(self, base_method_values, first_modification_values, second_modification_values, third_modification_values):
         x1 = [i for i in range(len(base_method_values))]
         y1 = self._prepare_y_values(base_method_values)
 
@@ -22,6 +22,9 @@ class Plotter:
 
         x3 = [i for i in range(len(second_modification_values))]
         y3 = self._prepare_y_values(second_modification_values)
+
+        x4 = [i for i in range(len(third_modification_values))]
+        y4 = self._prepare_y_values(third_modification_values)
 
         fig = plt.figure()
 
@@ -36,7 +39,8 @@ class Plotter:
 
         ax.plot(x1, y1, "-", label="Base method", color="tab:blue", )
         ax.plot(x2, y2, "--", label="First modification", color="tab:red")
-        ax.plot(x3, y3, ":", label="Second modification", color="tab:orange")
+        ax.plot(x3, y3, "-.", label="Second modification", color="tab:orange")
+        ax.plot(x4, y4, ":", label="Third modification", color="tab:green")
 
         plt.legend()
 

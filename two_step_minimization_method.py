@@ -13,11 +13,12 @@ class TwoStepMinimization:
     def __init__(self, input_list):
         self._function = sympify(input_list[0])
         self._x_0 = input_list[1]
-        self._accuracy = input_list[2]
+        self._accuracy = 10 ** input_list[2]
         self._min_point = input_list[3]
         self._dimension = len(self._x_0)
         self._free_symbols = sorted(self._function.free_symbols, key=lambda sym: sym.name)
         self._stopping_criteria = StoppingCriteria(self._dimension, self._function, self._free_symbols, self._accuracy)
+        self._iteration_threshold = 1000
 
     def _print_result_info(self, method_name, x_current, number_of_iterations, time_of_execution):
         info_str = f"Minimization Execution Results" \
@@ -175,6 +176,11 @@ class TwoStepMinimization:
                 x_next = self._get_x_next(x_current, alpha_current, s_current)
                 list_of_function_value_at_k_point.append(self._get_function_value_at_k_point(x_next))
 
+                if iteration_counter > self._iteration_threshold:
+                    self._print_result_info("Base Minimization", x_next, iteration_counter, datetime.now() - start_time)
+                    print("THRESHOLD")
+                    break
+
                 if (self._stopping_criteria.first_stopping_criteria(x_next, x_current) and
                         self._stopping_criteria.second_stopping_criteria(x_next, x_current) and
                         self._stopping_criteria.third_stopping_criteria(x_next)):
@@ -230,6 +236,12 @@ class TwoStepMinimization:
                     x_next = self._get_x_next(x_current, alpha_current, s_current)
                     list_of_function_value_at_k_point.append(self._get_function_value_at_k_point(x_next))
 
+                    if iteration_counter > self._iteration_threshold:
+                        self._print_result_info("First Modification", x_next, iteration_counter,
+                                                datetime.now() - start_time)
+                        print("THRESHOLD")
+                        break
+
                     if (self._stopping_criteria.first_stopping_criteria(x_next, x_current) and
                             self._stopping_criteria.second_stopping_criteria(x_next, x_current) and
                             self._stopping_criteria.third_stopping_criteria(x_next)):
@@ -273,6 +285,11 @@ class TwoStepMinimization:
                 x_next = self._get_x_next(x_current, alpha_current, s_current)
                 list_of_function_value_at_k_point.append(self._get_function_value_at_k_point(x_next))
 
+                if iteration_counter > self._iteration_threshold:
+                    self._print_result_info("Second Modification", x_next, iteration_counter, datetime.now() - start_time)
+                    print("THRESHOLD")
+                    break
+
                 if (self._stopping_criteria.first_stopping_criteria(x_next, x_current) and
                         self._stopping_criteria.second_stopping_criteria(x_next, x_current) and
                         self._stopping_criteria.third_stopping_criteria(x_next)):
@@ -287,11 +304,72 @@ class TwoStepMinimization:
 
         return list_of_function_value_at_k_point
 
+
+    def _get_s_k_third_modification(self, x_current, beta_current, s_previous, h_current, h_previous):
+        symbol_value_mapping = get_symbol_value_mapping(self._free_symbols, x_current, self._dimension)
+
+        x_current_anti_gradient = []
+        for i in range(self._dimension):
+            x_current_anti_gradient.append(get_anti_derivative(self._function, self._free_symbols[i]).
+                                           subs(symbol_value_mapping))
+        x_current_anti_gradient_np = np.array(x_current_anti_gradient)
+        s_previous_np = np.array(s_previous)
+        return np.dot(h_current, x_current_anti_gradient_np) + np.dot(np.dot(beta_current, h_previous), s_previous_np)
+    def run_third_modification_minimizer(self):
+        start_time = datetime.now()
+        list_of_function_value_at_k_point = [self._get_function_value_at_k_point(self._x_0)]
+        iteration_counter = 0
+
+        s_0 = self._get_s_0()
+        alpha_0 = self._get_alpha_k(self._x_0, s_0)
+        x_1 = self._get_x_next(self._x_0, alpha_0, s_0)
+        list_of_function_value_at_k_point.append(self._get_function_value_at_k_point(x_1))
+        h_0 = np.eye(self._dimension)
+
+        if (self._stopping_criteria.first_stopping_criteria(x_1, self._x_0) and
+                self._stopping_criteria.second_stopping_criteria(x_1, self._x_0) and
+                self._stopping_criteria.third_stopping_criteria(x_1)):
+            self._print_result_info("Third Modification", x_1, iteration_counter, datetime.now() - start_time)
+        else:
+            x_previous = self._x_0
+            x_current = x_1
+            s_previous = s_0
+            h_current = self._get_h_k(x_current, x_previous, h_0)
+            h_previous = h_0
+
+            while True:
+                iteration_counter += 1
+                beta_current = self._get_beta_k(x_current, x_previous, iteration_counter)
+                s_current = self._get_s_k_third_modification(x_current, beta_current, s_previous, h_current, h_previous)
+                alpha_current = self._get_alpha_k(x_current, s_current)
+                x_next = self._get_x_next(x_current, alpha_current, s_current)
+                list_of_function_value_at_k_point.append(self._get_function_value_at_k_point(x_next))
+
+                if iteration_counter > self._iteration_threshold:
+                    self._print_result_info("Third Modification", x_next, iteration_counter, datetime.now() - start_time)
+                    print("THRESHOLD")
+                    break
+
+                if (self._stopping_criteria.first_stopping_criteria(x_next, x_current) and
+                        self._stopping_criteria.second_stopping_criteria(x_next, x_current) and
+                        self._stopping_criteria.third_stopping_criteria(x_next)):
+                    self._print_result_info("Third Modification", x_next, iteration_counter,
+                                            datetime.now() - start_time)
+                    break
+                else:
+                    x_previous = x_current
+                    x_current = x_next
+                    s_previous = s_current
+                    h_previous = h_current
+                    h_current = self._get_h_k(x_current, x_previous, h_current)
+        return list_of_function_value_at_k_point
+
     def run_all_methods(self):
         plotter = Plotter(self._get_function_value_at_k_point(self._min_point))
 
         base_function_values_list = self.run_base_minimizer()
         first_modification_values = self.run_first_modification_minimizer()
         second_modification_values = self.run_second_modification_minimizer()
+        third_modification_values = self.run_third_modification_minimizer()
 
-        plotter.plot(base_function_values_list, first_modification_values, second_modification_values)
+        plotter.plot(base_function_values_list, first_modification_values, second_modification_values, third_modification_values)
