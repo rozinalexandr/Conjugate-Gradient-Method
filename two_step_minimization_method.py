@@ -242,18 +242,24 @@ class TwoStepMinimization:
                         print("THRESHOLD")
                         break
 
-                    if (self._stopping_criteria.first_stopping_criteria(x_next, x_current) and
-                            self._stopping_criteria.second_stopping_criteria(x_next, x_current) and
-                            self._stopping_criteria.third_stopping_criteria(x_next)):
-                        self._print_result_info("First Modification", x_next, iteration_counter,
-                                                datetime.now() - start_time)
+                    try:
+                        if (self._stopping_criteria.first_stopping_criteria(x_next, x_current) and
+                                self._stopping_criteria.second_stopping_criteria(x_next, x_current) and
+                                self._stopping_criteria.third_stopping_criteria(x_next)):
+                            self._print_result_info("First Modification", x_next, iteration_counter,
+                                                    datetime.now() - start_time)
+                            break
+                        else:
+                            x_previous_previous = x_previous
+                            x_previous = x_current
+                            x_current = x_next
+                            s_previous = s_current
+                            h_previous = self._get_h_k(x_previous, x_previous_previous, h_previous)
+                    except TypeError:
+                        print("ENTRAPMENT")
+                        self._print_result_info("First Modification", x_current, iteration_counter, datetime.now() - start_time)
                         break
-                    else:
-                        x_previous_previous = x_previous
-                        x_previous = x_current
-                        x_current = x_next
-                        s_previous = s_current
-                        h_previous = self._get_h_k(x_previous, x_previous_previous, h_previous)
+
         return list_of_function_value_at_k_point
 
     def run_second_modification_minimizer(self):
@@ -290,20 +296,25 @@ class TwoStepMinimization:
                     print("THRESHOLD")
                     break
 
-                if (self._stopping_criteria.first_stopping_criteria(x_next, x_current) and
-                        self._stopping_criteria.second_stopping_criteria(x_next, x_current) and
-                        self._stopping_criteria.third_stopping_criteria(x_next)):
-                    self._print_result_info("Second Modification", x_next, iteration_counter,
-                                            datetime.now() - start_time)
+                try:
+                    if (self._stopping_criteria.first_stopping_criteria(x_next, x_current) and
+                            self._stopping_criteria.second_stopping_criteria(x_next, x_current) and
+                            self._stopping_criteria.third_stopping_criteria(x_next)):
+                        self._print_result_info("Second Modification", x_next, iteration_counter,
+                                                datetime.now() - start_time)
+                        break
+                    else:
+                        x_previous = x_current
+                        x_current = x_next
+                        s_previous = s_current
+                        h_current = self._get_h_k(x_current, x_previous, h_current)
+
+                except TypeError:
+                    print("ENTRAPMENT")
+                    self._print_result_info("Second Modification", x_current, iteration_counter, datetime.now() - start_time)
                     break
-                else:
-                    x_previous = x_current
-                    x_current = x_next
-                    s_previous = s_current
-                    h_current = self._get_h_k(x_current, x_previous, h_current)
 
         return list_of_function_value_at_k_point
-
 
     def _get_s_k_third_modification(self, x_current, beta_current, s_previous, h_current, h_previous):
         symbol_value_mapping = get_symbol_value_mapping(self._free_symbols, x_current, self._dimension)
@@ -315,6 +326,7 @@ class TwoStepMinimization:
         x_current_anti_gradient_np = np.array(x_current_anti_gradient)
         s_previous_np = np.array(s_previous)
         return np.dot(h_current, x_current_anti_gradient_np) + np.dot(np.dot(beta_current, h_previous), s_previous_np)
+
     def run_third_modification_minimizer(self):
         start_time = datetime.now()
         list_of_function_value_at_k_point = [self._get_function_value_at_k_point(self._x_0)]
@@ -350,18 +362,25 @@ class TwoStepMinimization:
                     print("THRESHOLD")
                     break
 
-                if (self._stopping_criteria.first_stopping_criteria(x_next, x_current) and
-                        self._stopping_criteria.second_stopping_criteria(x_next, x_current) and
-                        self._stopping_criteria.third_stopping_criteria(x_next)):
-                    self._print_result_info("Third Modification", x_next, iteration_counter,
-                                            datetime.now() - start_time)
+                try:
+                    if (self._stopping_criteria.first_stopping_criteria(x_next, x_current) and
+                            self._stopping_criteria.second_stopping_criteria(x_next, x_current) and
+                            self._stopping_criteria.third_stopping_criteria(x_next)):
+                        self._print_result_info("Third Modification", x_next, iteration_counter,
+                                                datetime.now() - start_time)
+                        break
+                    else:
+                        x_previous = x_current
+                        x_current = x_next
+                        s_previous = s_current
+                        h_previous = h_current
+                        h_current = self._get_h_k(x_current, x_previous, h_current)
+
+                except TypeError:
+                    print("ENTRAPMENT")
+                    self._print_result_info("Third Modification", x_current, iteration_counter, datetime.now() - start_time)
                     break
-                else:
-                    x_previous = x_current
-                    x_current = x_next
-                    s_previous = s_current
-                    h_previous = h_current
-                    h_current = self._get_h_k(x_current, x_previous, h_current)
+
         return list_of_function_value_at_k_point
 
     def run_all_methods(self):
