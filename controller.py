@@ -2,6 +2,9 @@ from methods.conjugate_gradients import ConjugateGradients
 from methods.conjugate_gradients_1st_modification import ConjugateGradientsFirstModification
 from methods.conjugate_gradients_2nd_modification import ConjugateGradientsSecondModification
 from methods.conjugate_gradients_3rd_modification import ConjugateGradientsThirdModification
+
+from mathematics.modification import get_alpha_k_single_factor_minimization, get_alpha_k_doubling_method
+
 from drawing.plotter import make_plot
 
 
@@ -18,7 +21,7 @@ class Controller:
         the value in the methods_dict variable.
 
         :param method_name: String parameter with the name of the method.
-        :return: Instance of required method class.
+        :return: Required class without initialization
         """
         methods_dict = {
             "Conjugate Gradients": ConjugateGradients,
@@ -28,17 +31,48 @@ class Controller:
         }
 
         try:
-            return methods_dict[method_name]()
+            return methods_dict[method_name]
+        except KeyError:
+            raise KeyError(f"Wrong Method Name: {method_name}")
+
+    def _get_alpha_k_calculating_method(self):
+        """
+        The method selects the required function to calculate alpha. It returns the function without calling it.
+        Only one alpha calculation option can be selected, so if more or less calculation options are selected, an
+        error will occur.
+
+        :return: Required alpha calculating function without calling it.
+        """
+        methods_dict = {
+            "Single-Factor Minimization": get_alpha_k_single_factor_minimization,
+            "Doubling Method": get_alpha_k_doubling_method
+        }
+
+        selected_methods = [k for k, v in self._settings["Alpha k Selection"].items() if v]
+        if len(selected_methods) != 1:
+            raise Exception(f"Only one alpha calculating method could be selected. It has been selected "
+                            f"{len(selected_methods)} methods")
+        else:
+            method_name = selected_methods[0]
+
+        try:
+            return methods_dict[method_name]
         except KeyError:
             raise KeyError(f"Wrong Method Name: {method_name}")
 
     def run(self):
+        # select the necessary alpha calculation method without calling it. It will be passed to the calculator classes
+        alpha_k_method = self._get_alpha_k_calculating_method()
+
         # selecting all the methods, which have 'True' value
         selected_methods = [k for k, v in self._settings["Methods Selection"].items() if v]
+        if len(selected_methods) == 0:
+            raise Exception("Please, select any minimization method")
 
         for selected_method_name in selected_methods:
-            method = self._get_minimization_method(method_name=selected_method_name)
-            method.run_method()
+            # initialize calculator classes
+            method_instance = self._get_minimization_method(method_name=selected_method_name)()
+            method_instance.run_method()
 
 
 
