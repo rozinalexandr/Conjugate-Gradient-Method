@@ -65,3 +65,22 @@ def get_symbol_value_mapping(symbols_array: List[sympy.Symbol],
         symbol_value_mapping[symbols_array[i]] = values_array[i]
 
     return symbol_value_mapping
+
+
+def get_function_value_at_k_point(function: sympy.core.add.Add,
+                                  free_symbols: List[sympy.Symbol],
+                                  x_current: np.ndarray[float | int],
+                                  dimension: int) -> int | float:
+    """
+    Function calculates value of the origin function with current coordinates.
+
+    :param function: Function, which was transformed with sympy.sympify().
+    :param free_symbols: List, which contains unique sympy.Symbols of variables from origin function.
+    :param x_current: np.ndarray with values of origin function variables.
+    :param dimension: Number of unique function variables.
+
+    :return: Function value at current coordinates.
+    """
+
+    symbol_value_mapping = get_symbol_value_mapping(free_symbols, x_current, dimension)
+    return function.subs(symbol_value_mapping)
