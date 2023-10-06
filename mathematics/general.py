@@ -84,3 +84,21 @@ def get_function_value_at_k_point(function: sympy.core.add.Add,
 
     symbol_value_mapping = get_symbol_value_mapping(free_symbols, x_current, dimension)
     return function.subs(symbol_value_mapping)
+
+
+def convert_y_values_to_plot(function_values_at_all_points: np.ndarray[float | int],
+                             function_value_at_known_min_point: float | int) -> np.ndarray[float | int]:
+    """
+    This function converts Function values at all points as follows: log |f(x) - f(x*)|.
+    Where f(x) - is Function value at a certain point and f(x*) - is Function value at known point of minimum.
+
+    :param function_values_at_all_points: np.ndarray of Function values.
+    :param function_value_at_known_min_point: Function value at known point of minimum.
+    :return:
+    """
+
+    y = []
+    for i in function_values_at_all_points.astype(np.float64):
+        y.append(np.log10(abs(i - np.array(function_value_at_known_min_point).astype(np.float64))))
+
+    return np.array(y)

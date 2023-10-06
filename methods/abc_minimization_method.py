@@ -53,7 +53,8 @@ class ABCMinimisationMethod(ABC):
                           iteration_number: int,
                           time: datetime.timedelta,
                           reached_min_func_value: float | int,
-                          started_func_value: float | int) -> None:
+                          started_func_value: float | int,
+                          known_min_function_value: float | int) -> None:
         """
         Method prints all the necessary information of minimization process.
 
@@ -62,6 +63,7 @@ class ABCMinimisationMethod(ABC):
         :param time: Taken time for minimization.
         :param reached_min_func_value: Function value at reached point of minimum.
         :param started_func_value: Function value at starting point.
+        :param known_min_function_value: Function value at known minimum point.
         """
 
         delimiter = "=" * 70 + "\n"
@@ -72,9 +74,10 @@ class ABCMinimisationMethod(ABC):
         time = f"Execution time: {time}\n"
         reached_min_func_value = f"Function value at the reached minimum point: {reached_min_func_value}\n"
         started_func_value = f"Function value at starting point: {started_func_value}\n"
+        known_min_function_value = f"Function value at known minimum point: {known_min_function_value}\n"
 
-        print(delimiter + method_name + resulting_min + target_min + iterations + time + reached_min_func_value
-              + started_func_value + delimiter)
+        print(delimiter + method_name + resulting_min + target_min + iterations + time + known_min_function_value +
+              started_func_value + reached_min_func_value + delimiter)
 
     @abstractmethod
     def run_method(self):

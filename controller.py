@@ -5,6 +5,7 @@ from methods.conjugate_gradients_1st_modification import ConjugateGradientsFirst
 from methods.conjugate_gradients_2nd_modification import ConjugateGradientsSecondModification
 from methods.conjugate_gradients_3rd_modification import ConjugateGradientsThirdModification
 from mathematics.modification import get_alpha_k_single_factor_minimization, get_alpha_k_doubling_method
+from mathematics.general import convert_y_values_to_plot
 from drawing.plotter import make_plot
 
 
@@ -62,7 +63,7 @@ class Controller:
         except KeyError:
             raise KeyError(f"Wrong Method Name: {method_name}")
 
-    def run(self):
+    def run(self) -> None:
         # select the necessary alpha calculation method without calling it. It will be passed to the calculator classes
         alpha_k_method = self._get_alpha_k_calculating_method()
 
@@ -70,6 +71,8 @@ class Controller:
         selected_methods = [k for k, v in self._settings["Methods Selection"].items() if v]
         if len(selected_methods) == 0:
             raise Exception("Please, select any minimization method")
+
+        methods_result_list = []
 
         for selected_method_name in selected_methods:
             # initialize calculator class
@@ -80,12 +83,12 @@ class Controller:
                                      accuracy=self._settings["Function Settings"]["Accuracy"],
                                      iteration_threshold=self._settings["Function Settings"]["Iteration Threshold"],
                                      alpha_k_calculating_method=alpha_k_method)
-            method_instance.run_method()
 
-        test1 = {"name": "Conjugate Gradients", "x": [0, 1, 2, 3, 4], "y": [0, 1, 2, 3, 4]}
-        test2 = {"name": "Conjugate Gradients 1st Modification", "x": [0, 1, 2, 3, 4], "y": [0, 10, 20, 30, 40]}
-        test3 = {"name": "Conjugate Gradients 2nd Modification", "x": [0, 10, 20, 30, 40], "y": [0, 1, 2, 3, 4]}
-        test4 = {"name": "Conjugate Gradients 3rd Modification", "x": [40, 31, 22, 13, 4], "y": [0, 10, 20, 30, 40]}
-        test5 = {"name": "Test", "x": [10, 20, 30, 40, 50], "y": [20, 20, 20, 20, 20]}
+            result_list, function_value_at_known_point = method_instance.run_method()
+
+            methods_result_list.append({"name": method_instance,
+                                        "x": [i for i in range(len(result_list))],
+                                        "y": convert_y_values_to_plot(result_list, function_value_at_known_point)})
+
         if self._settings["Plotter Settings"]["Plot"]:
-            make_plot(test1, test2, test3, test4, test5)
+            make_plot(methods_result_list)

@@ -42,29 +42,6 @@ def get_alpha_k_doubling_method():
     print("Alpha is calculated with Doubling Method")
 
 
-def get_s_0(function: sympy.core.add.Add,
-            free_symbols: List[sympy.Symbol],
-            x_0: np.ndarray[float | int],
-            dimension: int) -> np.ndarray[float | int]:
-    """
-    The function calculates the initial direction of descent (see more information in README).
-
-    :param function: Function, which was transformed with sympy.sympify().
-    :param free_symbols: List, which contains unique sympy.Symbols of variables from origin function.
-    :param x_0: np.ndarray with values of origin function variables at starting point.
-    :param dimension: Number of unique function variables.
-
-    :return: np.ndarray with values of descent direction vector.
-    """
-
-    symbol_value_mapping = get_symbol_value_mapping(free_symbols, x_0, dimension)
-
-    s_0 = []
-    for i in range(dimension):
-        s_0.append(get_anti_derivative(function, free_symbols[i]).subs(symbol_value_mapping))
-    return np.array(s_0)
-
-
 def get_x_next(x_current: np.ndarray[float | int],
                alpha_current: float | int,
                s_current: np.ndarray[float | int]) -> np.ndarray[float | int]:
@@ -125,7 +102,8 @@ def get_s_k_base_modification(function: sympy.core.add.Add,
                               x_current: np.ndarray[float | int],
                               beta_current: int | float,
                               s_previous: np.ndarray[float | int],
-                              dimension: int) -> np.ndarray[float | int]:
+                              dimension: int,
+                              iteration: int) -> np.ndarray[float | int]:
     """
     The function calculates current direction of descent (see more information in README).
 
@@ -135,16 +113,24 @@ def get_s_k_base_modification(function: sympy.core.add.Add,
     :param beta_current: Value of descent step size.
     :param s_previous: np.ndarray with values of descent direction vector at previous point.
     :param dimension: Number of unique function variables.
+    :param iteration: Number of current iteration.
 
     :return: np.ndarray with values of descent direction vector.
     """
 
     symbol_value_mapping = get_symbol_value_mapping(free_symbols, x_current, dimension)
 
-    x_current_anti_gradient = []
-    for i in range(dimension):
-        x_current_anti_gradient.append(get_anti_derivative(function, free_symbols[i]).subs(symbol_value_mapping))
+    if iteration == 0:
+        s_0 = []
+        for i in range(dimension):
+            s_0.append(get_anti_derivative(function, free_symbols[i]).subs(symbol_value_mapping))
+        return np.array(s_0)
 
-    x_current_anti_gradient_np = np.array(x_current_anti_gradient)
+    else:
+        x_current_anti_gradient = []
+        for i in range(dimension):
+            x_current_anti_gradient.append(get_anti_derivative(function, free_symbols[i]).subs(symbol_value_mapping))
 
-    return x_current_anti_gradient_np + beta_current * s_previous
+        x_current_anti_gradient_np = np.array(x_current_anti_gradient)
+
+        return x_current_anti_gradient_np + beta_current * s_previous

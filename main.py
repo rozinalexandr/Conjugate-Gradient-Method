@@ -6,14 +6,15 @@ settings = {
         "Function": "(x_1**2 + x_2 - 11)**2 + (x_1 + x_2**2 - 7)**2",
         "Starting Coordinates": [1, 1],
         "Accuracy": -5,
-        "Specified Minimum Coordinates": [3, 2]
+        "Specified Minimum Coordinates": [3, 2],
+        "Iteration Threshold": 1000
     },
 
     "Methods Selection": {
         "Conjugate Gradients": True,
-        "Conjugate Gradients 1st Modification": True,
-        "Conjugate Gradients 2nd Modification": True,
-        "Conjugate Gradients 3rd Modification": True
+        "Conjugate Gradients 1st Modification": False,
+        "Conjugate Gradients 2nd Modification": False,
+        "Conjugate Gradients 3rd Modification": False
     },
 
     "Alpha k Selection": {
