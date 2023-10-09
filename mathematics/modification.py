@@ -134,3 +134,129 @@ def get_s_k_base_modification(function: sympy.core.add.Add,
         x_current_anti_gradient_np = np.array(x_current_anti_gradient)
 
         return x_current_anti_gradient_np + beta_current * s_previous
+
+
+def get_delta_x(x_next: np.ndarray[float | int],
+                x_current: np.ndarray[float | int]) -> np.ndarray[float | int]:
+    """
+    The function calculates the difference of coordinates of points x. For more information see README.
+
+    :param x_next: np.ndarray with values of origin function variables at next point.
+    :param x_current: np.ndarray with values of origin function variables at current point.
+
+    :return: np.ndarray with coordinate difference.
+    """
+
+    return np.subtract(x_next, x_current)
+
+
+def get_delta_y(function: sympy.core.add.Add,
+                free_symbols: List[sympy.Symbol],
+                x_next: np.ndarray[float | int],
+                x_current: np.ndarray[float | int],
+                dimension: int) -> np.ndarray[float | int]:
+    """
+    Function calculates the special parameter delta Y. For more information see README.
+
+    :param function: Function, which was transformed with sympy.sympify().
+    :param free_symbols: List, which contains unique sympy.Symbols of variables from origin function.
+    :param x_next: np.ndarray with values of origin function variables at next point.
+    :param x_current: np.ndarray with values of origin function variables at current point.
+    :param dimension: Number of unique function variables.
+
+    :return: np.ndarray with values of delta Y.
+    """
+
+    next_symbol_value_mapping = get_symbol_value_mapping(free_symbols, x_next, dimension)
+    current_symbol_value_mapping = get_symbol_value_mapping(free_symbols, x_current, dimension)
+
+    derivative_list = []
+    for i in range(dimension):
+        derivative_list.append(get_derivative(function, free_symbols[i]))
+
+    next_derivative_w_substitution = []
+    current_derivative_w_substitution = []
+    for derivative in derivative_list:
+        next_derivative_w_substitution.append(derivative.subs(next_symbol_value_mapping))
+        current_derivative_w_substitution.append(derivative.subs(current_symbol_value_mapping))
+
+    return (np.array(next_derivative_w_substitution).astype(np.float64)
+            - np.array(current_derivative_w_substitution).astype(np.float64))
+
+
+def get_h_k(function: sympy.core.add.Add,
+            free_symbols: List[sympy.Symbol],
+            x_next: np.ndarray[float | int],
+            x_current: np.ndarray[float | int],
+            dimension: int,
+            h_previous: np.ndarray[np.ndarray[float | int]]) -> np.ndarray[np.ndarray[float | int]]:
+    """
+    Function calculates a special matrix H, which is used in modifications. For more information see README.
+
+    :param function: Function, which was transformed with sympy.sympify().
+    :param free_symbols: List, which contains unique sympy.Symbols of variables from origin function.
+    :param x_next: np.ndarray with values of origin function variables at next point.
+    :param x_current: np.ndarray with values of origin function variables at current point.
+    :param dimension: Number of unique function variables.
+    :param h_previous: Matrix H, which was calculated at previous iteration.
+
+    :return: Special matrix H.
+    """
+
+    delta_x = get_delta_x(x_next=x_next,
+                          x_current=x_current)
+
+    delta_y = get_delta_y(function=function,
+                          free_symbols=free_symbols,
+                          x_next=x_next,
+                          x_current=x_current,
+                          dimension=dimension)
+
+    bracketed_expression = np.subtract(delta_x, np.dot(h_previous, delta_y))
+
+    expression_right_side = np.divide(np.dot(bracketed_expression.T, bracketed_expression.T),
+                                      np.dot(bracketed_expression, delta_y))
+
+    return np.add(h_previous, expression_right_side)
+
+
+def get_s_k_second_modification(function: sympy.core.add.Add,
+                                free_symbols: List[sympy.Symbol],
+                                x_current: np.ndarray[float | int],
+                                beta_current: float | int,
+                                s_previous: np.ndarray[float | int],
+                                h_current: np.ndarray[np.ndarray[float | int]],
+                                dimension: int,
+                                iteration: int) -> np.ndarray[float | int]:
+    """
+    The function calculates current direction of descent (see more information in README).
+
+    :param function: Function, which was transformed with sympy.sympify().
+    :param free_symbols: List, which contains unique sympy.Symbols of variables from origin function.
+    :param x_current: np.ndarray with values of origin function variables at current point.
+    :param beta_current: Value of descent step size.
+    :param s_previous: np.ndarray with values of descent direction vector at previous point.
+    :param h_current: Special matrix H, used for this modification.
+    :param dimension: Number of unique function variables.
+    :param iteration: Number of current iteration.
+
+    :return: np.ndarray with values of descent direction vector.
+    """
+
+    symbol_value_mapping = get_symbol_value_mapping(free_symbols, x_current, dimension)
+
+    if iteration == 0:
+        s_0 = []
+        for i in range(dimension):
+            s_0.append(get_anti_derivative(function, free_symbols[i]).subs(symbol_value_mapping))
+        return np.array(s_0)
+
+    else:
+        x_current_anti_gradient = []
+        for i in range(dimension):
+            x_current_anti_gradient.append(get_anti_derivative(function, free_symbols[i]).subs(symbol_value_mapping))
+
+        x_current_anti_gradient_np = np.array(x_current_anti_gradient)
+        s_previous_np = np.array(s_previous)
+
+        return np.dot(h_current, x_current_anti_gradient_np) + np.dot(beta_current, s_previous_np)
