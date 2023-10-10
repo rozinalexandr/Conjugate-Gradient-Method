@@ -134,5 +134,6 @@ class ConjugateGradientsSecondModification(ABCMinimisationMethod):
                                        reached_min_func_value=list_of_function_value_at_k_point[-1],
                                        started_func_value=list_of_function_value_at_k_point[0],
                                        known_min_function_value=function_value_at_known_min_point)
+                break
 
         return np.array(list_of_function_value_at_k_point), function_value_at_known_min_point
