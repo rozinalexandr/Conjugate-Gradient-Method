@@ -260,3 +260,45 @@ def get_s_k_second_modification(function: sympy.core.add.Add,
         s_previous_np = np.array(s_previous)
 
         return np.dot(h_current, x_current_anti_gradient_np) + np.dot(beta_current, s_previous_np)
+
+
+def get_s_k_first_modification(function: sympy.core.add.Add,
+                               free_symbols: List[sympy.Symbol],
+                               x_current: np.ndarray[float | int],
+                               beta_current: float | int,
+                               s_previous: np.ndarray[float | int],
+                               h_previous: np.ndarray[np.ndarray[float | int]],
+                               dimension: int,
+                               iteration: int) -> np.ndarray[float | int]:
+    """
+    The function calculates current direction of descent (see more information in README).
+
+    :param function: Function, which was transformed with sympy.sympify().
+    :param free_symbols: List, which contains unique sympy.Symbols of variables from origin function.
+    :param x_current: np.ndarray with values of origin function variables at current point.
+    :param beta_current: Value of descent step size.
+    :param s_previous: np.ndarray with values of descent direction vector at previous point.
+    :param h_previous: Special matrix H, used for this modification.
+    :param dimension: Number of unique function variables.
+    :param iteration: Number of current iteration.
+
+    :return: np.ndarray with values of descent direction vector.
+    """
+
+    symbol_value_mapping = get_symbol_value_mapping(free_symbols, x_current, dimension)
+
+    if iteration == 0:
+        s_0 = []
+        for i in range(dimension):
+            s_0.append(get_anti_derivative(function, free_symbols[i]).subs(symbol_value_mapping))
+        return np.array(s_0)
+
+    else:
+        x_current_anti_gradient = []
+        for i in range(dimension):
+            x_current_anti_gradient.append(get_anti_derivative(function, free_symbols[i]).subs(symbol_value_mapping))
+
+        x_current_anti_gradient_np = np.array(x_current_anti_gradient)
+        s_previous_np = np.array(s_previous)
+
+        return x_current_anti_gradient_np + beta_current * np.dot(h_previous, s_previous_np)
