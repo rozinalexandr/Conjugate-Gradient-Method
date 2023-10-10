@@ -1,11 +1,11 @@
+import numpy as np
+
 from datetime import datetime
 from typing import List, Callable, Tuple
 
-import numpy as np
-
 from methods.abc_minimization_method import ABCMinimisationMethod
-from mathematics.general import get_function_value_at_k_point
-from mathematics.modification import get_beta_k, get_s_k_first_modification, get_x_next, get_h_k
+from mathematics.general import get_function_value_at_k_point, get_symbol_value_mapping, get_anti_derivative
+from mathematics.modification import get_beta_k, get_x_next, get_h_k
 from stopping_criteria.conjugate_stopping_criteria.conjugate_stopping_criteria import check_all_criteria
 
 
@@ -30,6 +30,43 @@ class ConjugateGradientsFirstModification(ABCMinimisationMethod):
         :param free_symbols: List of unique sympy.Symbols, which are the function variables.
         """
         super().__init__(function, x_0, min_point, accuracy, iteration_threshold, alpha_k_calculating_method)
+
+    def get_s_k_first_modification(self,
+                                   x_current: np.ndarray[float | int],
+                                   beta_current: float | int,
+                                   s_previous: np.ndarray[float | int],
+                                   h_previous: np.ndarray[np.ndarray[float | int]],
+                                   iteration: int) -> np.ndarray[float | int]:
+        """
+        The function calculates current direction of descent (see more information in README).
+
+        :param x_current: np.ndarray with values of origin function variables at current point.
+        :param beta_current: Value of descent step size.
+        :param s_previous: np.ndarray with values of descent direction vector at previous point.
+        :param h_previous: Special matrix H, used for this modification.
+        :param iteration: Number of current iteration.
+
+        :return: np.ndarray with values of descent direction vector.
+        """
+
+        symbol_value_mapping = get_symbol_value_mapping(self.free_symbols, x_current, self.dimension)
+
+        if iteration == 0:
+            s_0 = []
+            for i in range(self.dimension):
+                s_0.append(get_anti_derivative(self.function, self.free_symbols[i]).subs(symbol_value_mapping))
+            return np.array(s_0)
+
+        else:
+            x_current_anti_gradient = []
+            for i in range(self.dimension):
+                x_current_anti_gradient.append(get_anti_derivative(self.function,
+                                                                   self.free_symbols[i]).subs(symbol_value_mapping))
+
+            x_current_anti_gradient_np = np.array(x_current_anti_gradient)
+            s_previous_np = np.array(s_previous)
+
+            return x_current_anti_gradient_np + beta_current * np.dot(h_previous, s_previous_np)
 
     def run_method(self) -> Tuple[np.ndarray[float | int], int | float]:
         """
@@ -76,14 +113,11 @@ class ConjugateGradientsFirstModification(ABCMinimisationMethod):
                                       iteration_number=iteration_counter,
                                       dimension=self.dimension)
 
-            s_current = get_s_k_first_modification(function=self.function,
-                                                   free_symbols=self.free_symbols,
-                                                   x_current=x_current,
-                                                   beta_current=beta_current,
-                                                   s_previous=s_previous,
-                                                   h_previous=h_previous,
-                                                   dimension=self.dimension,
-                                                   iteration=iteration_counter)
+            s_current = self.get_s_k_first_modification(x_current=x_current,
+                                                        beta_current=beta_current,
+                                                        s_previous=s_previous,
+                                                        h_previous=h_previous,
+                                                        iteration=iteration_counter)
 
             alpha_current = self.alpha_k_calculating_method(function=self.function,
                                                             free_symbols=self.free_symbols,
