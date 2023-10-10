@@ -93,13 +93,13 @@ class ConjugateGradients(ABCMinimisationMethod):
 
         while True:
             if iteration_counter > self.iteration_threshold:
-                print("!!!!!!!!! THRESHOLD !!!!!!!!!")
                 self.print_result_info(min_point=x_current,
                                        iteration_number=iteration_counter,
                                        time=datetime.now() - start_time,
                                        reached_min_func_value=list_of_function_value_at_k_point[-1],
                                        started_func_value=list_of_function_value_at_k_point[0],
-                                       known_min_function_value=function_value_at_known_min_point)
+                                       known_min_function_value=function_value_at_known_min_point,
+                                       additional_message="!!!!!!!!! THRESHOLD !!!!!!!!!\n")
                 break
 
             beta_current = get_beta_k(function=self.function,
