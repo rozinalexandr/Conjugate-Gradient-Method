@@ -12,9 +12,9 @@ settings = {
 
     "Methods Selection": {
         "Conjugate Gradients": True,
-        "Conjugate Gradients 1st Modification": False,
-        "Conjugate Gradients 2nd Modification": False,
-        "Conjugate Gradients 3rd Modification": False
+        "Conjugate Gradients 1st Modification": True,
+        "Conjugate Gradients 2nd Modification": True,
+        "Conjugate Gradients 3rd Modification": True
     },
 
     "Alpha k Selection": {

@@ -31,11 +31,11 @@ class ConjugateGradients(ABCMinimisationMethod):
         """
         super().__init__(function, x_0, min_point, accuracy, iteration_threshold, alpha_k_calculating_method)
 
-    def get_s_k_base_modification(self,
-                                  x_current: np.ndarray[float | int],
-                                  beta_current: int | float,
-                                  s_previous: np.ndarray[float | int],
-                                  iteration: int) -> np.ndarray[float | int]:
+    def _get_s_k_base_modification(self,
+                                   x_current: np.ndarray[float | int],
+                                   beta_current: int | float,
+                                   s_previous: np.ndarray[float | int],
+                                   iteration: int) -> np.ndarray[float | int]:
         """
         The function calculates current direction of descent (see more information in README).
 
@@ -109,10 +109,10 @@ class ConjugateGradients(ABCMinimisationMethod):
                                       iteration_number=iteration_counter,
                                       dimension=self.dimension)
 
-            s_current = self.get_s_k_base_modification(x_current=x_current,
-                                                       beta_current=beta_current,
-                                                       s_previous=s_previous,
-                                                       iteration=iteration_counter)
+            s_current = self._get_s_k_base_modification(x_current=x_current,
+                                                        beta_current=beta_current,
+                                                        s_previous=s_previous,
+                                                        iteration=iteration_counter)
 
             alpha_current = self.alpha_k_calculating_method(function=self.function,
                                                             free_symbols=self.free_symbols,
