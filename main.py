@@ -1,64 +1,32 @@
-from two_step_minimization_method import TwoStepMinimization
-
-# 1
-# input_lst = ["(x_1**2 + x_2 - 11)**2 + (x_1 + x_2**2 - 7)**2", [1, 1], -5, [3, 2]]
+from controller import Controller
 
 
-# 2
-# input_lst = ["(x_2 - x_1**2)**2 + 100*(1-x_1)**2", [-1.2, 1], -5, [1, 1]]
+settings = {
+    "Function Settings": {
+        "Function": "(x_1**2 + x_2 - 11)**2 + (x_1 + x_2**2 - 7)**2",
+        "Starting Coordinates": [1, 1],
+        "Accuracy": -5,
+        "Specified Minimum Coordinates": [3, 2],
+        "Iteration Threshold": 1000
+    },
+
+    "Methods Selection": {
+        "Conjugate Gradients": True,
+        "Conjugate Gradients 1st Modification": True,
+        "Conjugate Gradients 2nd Modification": True,
+        "Conjugate Gradients 3rd Modification": True
+    },
+
+    "Alpha k Selection": {
+        "Single-Factor Minimization": True,
+        "Doubling Method": False
+    },
+
+    "Plotter Settings": {
+        "Plot": True
+    }
+}
 
 
-# 3
-# input_lst = ["-x_1**2 * exp(1-x_1**2-20.25*(x_1-x_2)**2)", [0.1, 0.1], -5, [-1, -1]]
-
-
-# 4
-# input_lst = ["(1.5-x_1*(1-x_2))**2+(2.25-x_1*(1-x_2**2))**2+(2.625-x_1*(1-x_2**3))**2", [2, 0.2], -5, [3, 0.5]]
-
-
-# 5 Power function
-# input_lst = ["(10*(x_1-x_2)**2 + (x_1-1)**2)**4", [-1.2, 0], -5, [1, 1]]
-
-
-# 6
-# input_lst = ["(x_2 - x_1**2)**2 + (1-x_1)**2", [-1.2, 1], -5, [1, 1]]
-
-
-# 7
-# input_lst = ["100*(x_2 - x_1**2) ** 2 + (1 - x_1)**2", [3, -2], -5, [1, 1]]
-
-
-# 8
-# input_lst = ["(5*x_1 + x_2**2 - x_3 - 9)**2 + (x_2 - x_3**3 + 1)**2 + (x_1 + 2*x_2 - 2)**2", [1, 1, 1], -5, [2, 0, 1]]
-
-
-# 9 Perturbed Quadratic Function n=3
-# input_lst = ["x_1**2 + 2*x_2**2 + 3*x_3**2 + 0.01 * (x_1 + x_2 + x_3)**2", [0.5, 0.5, 0.5], -5, [0, 0, 0]]
-
-
-# 10
-# input_lst = ["(x_1+10*x_2)**2+5*(x_3-x_4)**2+(x_2-2*x_3)**4+10*(x_1-x_4)**4", [3, -1, 0, 1], -5, [0, 0, 0, 0]]
-
-
-# 11 Wood function
-# input_lst = ["100*(x_2 - x_1**2)**2 + (1-x_1)**2 + 90*(x_4 - x_3**2)**2 + (1-x_3)**2 + 10.1*((x_2-1)**2 + (x_4-1)**2) + 19.8 * (x_2-1)*(x_4-1)", [-3, -1, -3, -1], -5, [1, 1, 1, 1]]
-
-
-# 12 Extended White & Hoist Function
-# input_lst = ["(100*(x_2-x_1**3)**2 + (1-x_1)**2) + (100*(x_4-x_3**3)**2 + (1-x_3)**2)", [-1.2, 1, -1.2, 1], -5, [1, 1, 1, 1]]
-
-
-# 13 Perturbed Quadratic Function n=4
-# input_lst = ["x_1**2 + 2*x_2**2 + 3*x_3**2 + 4*x_4**2 + 0.01 * (x_1 + x_2 + x_3 + x_4)**2", [0.5, 0.5, 0.5, 0.5], -5, [0, 0, 0, 0]]
-
-
-# 14 Extended Rosenbrock Function:
-# input_lst = ["100*(x_2-x_1**2)**2 + (1-x_1)**2 + 100*(x_4 - x_3**2)**2 + (1-x_3)**2", [-1.2, 1, -1.2, 1], -5, [1, 1, 1, 1]]
-
-
-# 15
-input_lst = ["(x_1 + 1)**2 + 10*(x_2-3)**2 + 200*x_3**4 + 10*(x_4+1)**2 + (x_5-1)**2", [1, 1, 1, 1, 1], -5, [-1, 3, 0, -1, 1]]
-
-
-minimizer = TwoStepMinimization(input_lst)
-minimizer.run_all_methods()
+controller = Controller(settings)
+controller.run()
