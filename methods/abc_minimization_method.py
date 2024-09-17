@@ -48,6 +48,13 @@ class ABCMinimisationMethod(ABC):
         """
         return " ".join(re.findall('[A-Z][^A-Z]*', type(self).__name__))
 
+    @staticmethod
+    def euclidean_distance(p: np.ndarray[float | int], q: np.ndarray[float | int]) -> str:
+        p = np.array(p).astype(np.float32)
+        q = np.array(q).astype(np.float32)
+
+        return f"{np.sqrt(np.sum((p - q) ** 2)):.2e}"
+
     def print_result_info(self,
                           min_point: np.ndarray[float | int],
                           iteration_number: int,
@@ -77,9 +84,11 @@ class ABCMinimisationMethod(ABC):
         reached_min_func_value = f"Function value at the reached minimum point: {reached_min_func_value}\n"
         started_func_value = f"Function value at starting point: {started_func_value}\n"
         known_min_function_value = f"Function value at known minimum point: {known_min_function_value}\n"
+        euclidian_distance = "Euclidian distance between Target and Resulting min points: " \
+                             + self.euclidean_distance(self.min_point, min_point) + "\n"
 
         print(additional_message + delimiter + method_name + resulting_min + target_min + iterations + time
-              + known_min_function_value + started_func_value + reached_min_func_value + delimiter)
+              + known_min_function_value + started_func_value + reached_min_func_value + euclidian_distance + delimiter)
 
     @abstractmethod
     def run_method(self):
