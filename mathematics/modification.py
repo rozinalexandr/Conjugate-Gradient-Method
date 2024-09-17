@@ -5,7 +5,8 @@ from scipy.optimize import minimize_scalar
 
 from typing import List
 
-from mathematics.general import get_symbol_value_mapping, get_derivative, get_norm_of_vector
+from mathematics.general import (get_symbol_value_mapping, get_derivative, get_norm_of_vector,
+                                 get_function_value_at_k_point)
 
 
 def get_alpha_k_single_factor_minimization(function: sympy.core.add.Add,
@@ -38,8 +39,35 @@ def get_alpha_k_single_factor_minimization(function: sympy.core.add.Add,
     return alpha_k.x
 
 
-def get_alpha_k_doubling_method():
-    print("Alpha is calculated with Doubling Method")
+def get_alpha_k_doubling_method(function: sympy.core.add.Add,
+                                free_symbols: List[sympy.Symbol],
+                                x_current: np.ndarray[float | int],
+                                s_current: np.ndarray[float | int],
+                                dimension: int) -> float | int:
+    """
+    The function performs doubling minimization of the original function. At the beginning, alpha value equals 1.
+    Then it calculates x_next using this aloha. If function value at x_next point is less than function value at
+    current point, then alpha parameter is correct and it returns it.
+    If function value at x_next point is greater than function value at current point, we divide alpha value by 2 and
+    repeat comparison.
+
+    :param function: Function, which was transformed with sympy.sympify().
+    :param free_symbols: List, which contains unique sympy.Symbols of variables from origin function.
+    :param x_current: np.ndarray with values of origin function variables at current point.
+    :param s_current: np.ndarray with values of descent direction vector.
+    :param dimension: Number of unique function variables.
+
+    :return: Value of alpha variable.
+    """
+    alpha = 1
+    x_next = get_x_next(x_current, alpha, s_current)
+
+    while (get_function_value_at_k_point(function, free_symbols, x_next, dimension) >
+           get_function_value_at_k_point(function, free_symbols, x_current, dimension)):
+        alpha /= 2
+        x_next = get_x_next(x_current, alpha, s_current)
+
+    return alpha
 
 
 def get_x_next(x_current: np.ndarray[float | int],
@@ -150,7 +178,7 @@ def get_h_k(function: sympy.core.add.Add,
             x_next: np.ndarray[float | int],
             x_current: np.ndarray[float | int],
             dimension: int,
-            h_previous: np.ndarray[np.ndarray[float | int]]) -> np.ndarray[np.ndarray[float | int]]:
+            h_previous: np.ndarray[np.ndarray[float | int]]): #-> np.ndarray[np.ndarray[float | int]]:
     """
     Function calculates a special matrix H, which is used in modifications. For more information see README.
 
@@ -174,8 +202,10 @@ def get_h_k(function: sympy.core.add.Add,
                           dimension=dimension)
 
     bracketed_expression = np.subtract(delta_x, np.dot(h_previous, delta_y))
+    denominator = np.dot(bracketed_expression, delta_y)
+    if denominator == 0:
+        return np.eye(dimension)
+    else:
+        expression_right_side = np.divide(np.dot(bracketed_expression.T, bracketed_expression), denominator)
 
-    expression_right_side = np.divide(np.dot(bracketed_expression.T, bracketed_expression.T),
-                                      np.dot(bracketed_expression, delta_y))
-
-    return np.add(h_previous, expression_right_side)
+        return np.add(h_previous, expression_right_side)
