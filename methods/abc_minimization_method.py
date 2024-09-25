@@ -49,11 +49,35 @@ class ABCMinimisationMethod(ABC):
         return " ".join(re.findall('[A-Z][^A-Z]*', type(self).__name__))
 
     @staticmethod
-    def euclidean_distance(p: np.ndarray[float | int], q: np.ndarray[float | int]) -> str:
+    def euclidean_distance(p: np.ndarray[float | int],
+                           q: np.ndarray[float | int]) -> str:
+        """
+        Method calculates the Euclidian Distance between 2 points.
+
+        :param p: First point.
+        :param q: Second point.
+
+        :return: string with Euclidian Distance.
+        """
+
         p = np.array(p).astype(np.float32)
         q = np.array(q).astype(np.float32)
 
         return f"{np.sqrt(np.sum((p - q) ** 2)):.2e}"
+
+    @staticmethod
+    def reformat_min_coordinates_output(min_point: np.ndarray[float | int],
+                                        precision: int) -> str:
+        """
+        Method changes minimum point coordinates, so they could be displayed in a better way.
+
+        :param min_point: numpy array with minimum point coordinates.
+        :param precision: number of numbers to be displayed after decimal point.
+
+        :return: string with reformatted coordinates.
+        """
+
+        return "(" + ", ".join([f"{i:.{precision + 1}}" for i in min_point]) + ")"
 
     def print_result_info(self,
                           min_point: np.ndarray[float | int],
@@ -75,20 +99,34 @@ class ABCMinimisationMethod(ABC):
         :param additional_message: Optional string to be written at the very beginning, before the delimiter.
         """
 
-        delimiter = "=" * 70 + "\n"
-        method_name = f"Method name: {self}\n"
-        resulting_min = f"The resulting point of minimum: {min_point}\n"
-        target_min = f"Target point of minimum: {self.min_point}\n"
-        iterations = f"Number of Iterations: {iteration_number}\n"
-        time = f"Execution time: {time}\n"
-        reached_min_func_value = f"Function value at the reached minimum point: {reached_min_func_value}\n"
-        started_func_value = f"Function value at starting point: {started_func_value}\n"
-        known_min_function_value = f"Function value at known minimum point: {known_min_function_value}\n"
-        euclidian_distance = "Euclidian distance between Target and Resulting min points: " \
-                             + self.euclidean_distance(self.min_point, min_point) + "\n"
+        delimiter_str = "=" * 70 + "\n"
+        method_name_str = f"Method name: {self}\n"
+        resulting_min_str = f"The resulting point of minimum: {self.reformat_min_coordinates_output(min_point, 8)}\n"
+        target_min_str = f"Target point of minimum: {'(' + ', '.join(self.min_point.astype(str)) + ')'}\n"
+        iterations_str = f"Number of Iterations: {iteration_number}\n"
+        time_str = f"Execution time: {time}\n"
+        reached_min_func_value_str = f"Function value at the reached minimum point: " \
+                                     f"{float(reached_min_func_value):.2e}\n"
+        started_func_value_str = f"Function value at starting point: {started_func_value}\n"
+        known_min_function_value_str = f"Function value at known minimum point (Phi*): {known_min_function_value}\n"
+        euclidian_distance_str = "Euclidian distance between Target and Resulting minimum points (Delta X): " \
+                                 + self.euclidean_distance(self.min_point, min_point) + "\n"
+        delta_phi_str = f"Difference between function values at known and reached minimum points (Delta Phi): " \
+                        f"{abs(float(known_min_function_value) - float(reached_min_func_value)):.2e}\n"
 
-        print(additional_message + delimiter + method_name + resulting_min + target_min + iterations + time
-              + known_min_function_value + started_func_value + reached_min_func_value + euclidian_distance + delimiter)
+        print(additional_message
+              + delimiter_str
+              + method_name_str
+              + resulting_min_str
+              + target_min_str
+              + euclidian_distance_str
+              + iterations_str
+              + time_str
+              + started_func_value_str
+              + known_min_function_value_str
+              + reached_min_func_value_str
+              + delta_phi_str
+              + delimiter_str)
 
     @abstractmethod
     def run_method(self):
