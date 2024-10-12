@@ -33,8 +33,8 @@ class ConjugateGradientsSecondModification(ABCMinimisationMethod):
 
     def _get_s_k_second_modification(self,
                                      x_current: np.ndarray[float | int],
+                                     x_previous: np.ndarray[float | int],
                                      beta_current: float | int,
-                                     s_previous: np.ndarray[float | int],
                                      h_current: np.ndarray[np.ndarray[float | int]],
                                      iteration: int) -> np.ndarray[float | int]:
         """
@@ -64,9 +64,9 @@ class ConjugateGradientsSecondModification(ABCMinimisationMethod):
                                                                    self.free_symbols[i]).subs(symbol_value_mapping))
 
             x_current_anti_gradient_np = np.array(x_current_anti_gradient)
-            s_previous_np = np.array(s_previous)
+            delta_x = np.subtract(x_current, x_previous)
 
-            return np.dot(h_current, x_current_anti_gradient_np) + np.dot(beta_current, s_previous_np)
+            return np.dot(h_current, x_current_anti_gradient_np) + np.dot(beta_current, delta_x)
 
     def run_method(self) -> Tuple[np.ndarray[float | int], int | float]:
         """
@@ -113,8 +113,8 @@ class ConjugateGradientsSecondModification(ABCMinimisationMethod):
                                       dimension=self.dimension)
 
             s_current = self._get_s_k_second_modification(x_current=x_current,
+                                                          x_previous=x_previous,
                                                           beta_current=beta_current,
-                                                          s_previous=s_previous,
                                                           h_current=h_current,
                                                           iteration=iteration_counter)
 

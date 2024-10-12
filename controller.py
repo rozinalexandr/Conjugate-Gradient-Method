@@ -29,7 +29,7 @@ class Controller:
             "Conjugate Gradients": ConjugateGradients,
             "Conjugate Gradients 1st Modification": ConjugateGradientsFirstModification,
             "Conjugate Gradients 2nd Modification": ConjugateGradientsSecondModification,
-            "Conjugate Gradients 3rd Modification": ConjugateGradientsThirdModification
+            "Conjugate Gradients 3rd Modification": ConjugateGradientsThirdModification,
         }
 
         try:

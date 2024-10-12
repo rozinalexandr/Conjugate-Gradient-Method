@@ -33,8 +33,8 @@ class ConjugateGradientsFirstModification(ABCMinimisationMethod):
 
     def _get_s_k_first_modification(self,
                                     x_current: np.ndarray[float | int],
+                                    x_previous: np.ndarray[float | int],
                                     beta_current: float | int,
-                                    s_previous: np.ndarray[float | int],
                                     h_previous: np.ndarray[np.ndarray[float | int]],
                                     iteration: int) -> np.ndarray[float | int]:
         """
@@ -64,9 +64,9 @@ class ConjugateGradientsFirstModification(ABCMinimisationMethod):
                                                                    self.free_symbols[i]).subs(symbol_value_mapping))
 
             x_current_anti_gradient_np = np.array(x_current_anti_gradient)
-            s_previous_np = np.array(s_previous)
+            delta_x = np.subtract(x_current, x_previous)
 
-            return x_current_anti_gradient_np + beta_current * np.dot(h_previous, s_previous_np)
+            return x_current_anti_gradient_np + beta_current * np.dot(h_previous, delta_x)
 
     def run_method(self) -> Tuple[np.ndarray[float | int], int | float]:
         """
@@ -92,7 +92,6 @@ class ConjugateGradientsFirstModification(ABCMinimisationMethod):
 
         x_current = self.x_0
         x_previous = np.array([])
-        s_previous = np.array([])
         h_previous = np.eye(self.dimension)
 
         while True:
@@ -114,8 +113,8 @@ class ConjugateGradientsFirstModification(ABCMinimisationMethod):
                                       dimension=self.dimension)
 
             s_current = self._get_s_k_first_modification(x_current=x_current,
+                                                         x_previous=x_previous,
                                                          beta_current=beta_current,
-                                                         s_previous=s_previous,
                                                          h_previous=h_previous,
                                                          iteration=iteration_counter)
 
@@ -155,7 +154,6 @@ class ConjugateGradientsFirstModification(ABCMinimisationMethod):
                     x_previous_previous = x_previous
                     x_previous = x_current
                     x_current = x_next
-                    s_previous = s_current
                     if iteration_counter == 1:
                         h_previous = np.eye(self.dimension)
                     else:
